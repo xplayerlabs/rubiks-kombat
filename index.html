@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUBIK'S KOMBAT</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+:root{
+  --yellow:#ffe600;
+  --red:#ff2233;
+  --orange:#ff7700;
+  --cyan:#00ddff;
+  --bg:#04000c;
+  --grid:#ffffff08;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;min-height:100%;background:var(--bg);color:#fff;font-family:'Share Tech Mono',monospace;overflow-x:hidden;}
+
+/* ── BACKGROUND ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg,  var(--grid) 0,var(--grid) 1px,transparent 1px,transparent 60px),
+    repeating-linear-gradient(90deg, var(--grid) 0,var(--grid) 1px,transparent 1px,transparent 60px);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 50% 40%,#1a003a 0%,transparent 70%);
+}
+
+/* floating cube tiles */
+.bg-tile{
+  position:fixed;pointer-events:none;z-index:0;
+  border-radius:3px;opacity:0.07;
+  animation:floatUp linear infinite;
+}
+@keyframes floatUp{
+  0%  {transform:translateY(110vh) rotate(0deg);opacity:0}
+  5%  {opacity:.07}
+  95% {opacity:.05}
+  100%{transform:translateY(-10vh) rotate(540deg);opacity:0}
+}
+
+/* scanlines */
+.scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);}
+
+/* ── LAYOUT ── */
+.wrap{
+  position:relative;z-index:2;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 20px 60px;
+  gap:0;
+}
+
+/* ── LOGO ── */
+.logo-area{text-align:center;margin-bottom:56px;}
+.logo-pre{
+  font-family:'Share Tech Mono',monospace;
+  font-size:clamp(12px,1.6vw,16px);
+  color:var(--red);letter-spacing:6px;
+  margin-bottom:14px;opacity:.75;
+}
+.logo{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:clamp(36px,9vw,96px);
+  line-height:.95;letter-spacing:4px;
+  color:var(--yellow);
+  text-shadow:4px 4px 0 var(--red),0 0 60px rgba(255,200,0,.35),0 0 120px rgba(255,100,0,.15);
+  animation:logoGlow 3s ease-in-out infinite;
+}
+@keyframes logoGlow{
+  0%,100%{text-shadow:4px 4px 0 var(--red),0 0 40px rgba(255,200,0,.25)}
+  50%    {text-shadow:4px 4px 0 var(--red),0 0 80px rgba(255,200,0,.7),0 0 140px rgba(255,80,0,.3)}
+}
+.logo-sub{
+  font-size:clamp(12px,2vw,18px);
+  color:var(--orange);letter-spacing:5px;
+  margin-top:14px;opacity:.65;
+}
+.logo-desc{
+  font-size:clamp(13px,1.6vw,16px);
+  color:#666;letter-spacing:1px;
+  margin-top:18px;line-height:2;
+  max-width:520px;margin-left:auto;margin-right:auto;
+}
+
+/* ── VERSIONS LABEL ── */
+.section-label{
+  font-size:clamp(11px,1.4vw,14px);
+  color:#555;letter-spacing:4px;
+  margin-bottom:20px;
+  display:flex;align-items:center;gap:14px;
+}
+.section-label::before,.section-label::after{
+  content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,#333);
+}
+.section-label::after{background:linear-gradient(90deg,#333,transparent);}
+
+/* ── VERSION CARDS ── */
+.versions{
+  display:flex;flex-direction:column;
+  gap:14px;width:100%;max-width:660px;
+}
+
+.version-card{
+  display:flex;align-items:center;
+  border:1px solid #1e1e1e;
+  background:rgba(255,255,255,.025);
+  cursor:pointer;
+  text-decoration:none;color:inherit;
+  padding:20px 26px;
+  gap:22px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,background .2s,transform .15s;
+}
+.version-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,var(--yellow),var(--orange));
+  opacity:0;transition:opacity .2s;
+  mix-blend-mode:overlay;
+}
+.version-card:hover{
+  border-color:var(--yellow);
+  background:rgba(255,220,0,.05);
+  transform:translateX(6px);
+}
+.version-card:hover::before{opacity:.08;}
+.version-card:active{transform:translateX(4px) scale(.99);}
+
+/* left accent bar */
+.version-card::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--yellow);opacity:0;transition:opacity .2s;
+}
+.version-card:hover::after{opacity:1;}
+
+.v-badge{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:clamp(18px,4vw,32px);
+  color:var(--yellow);
+  text-shadow:2px 2px 0 var(--red);
+  min-width:52px;text-align:center;flex-shrink:0;
+}
+.v-info{flex:1;}
+.v-title{
+  font-family:'Orbitron',sans-serif;font-weight:700;
+  font-size:clamp(13px,2.2vw,18px);
+  color:#fff;letter-spacing:2px;
+  margin-bottom:8px;
+}
+.v-desc{
+  font-size:clamp(12px,1.5vw,14px);
+  color:#666;letter-spacing:.5px;line-height:1.9;
+}
+.v-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.tag{
+  font-size:clamp(9px,1.1vw,11px);
+  padding:4px 10px;border:1px solid #2a2a2a;
+  color:#666;letter-spacing:1px;
+}
+.v-arrow{
+  font-size:20px;color:#333;
+  transition:color .2s,transform .2s;
+  flex-shrink:0;
+}
+.version-card:hover .v-arrow{color:var(--yellow);transform:translateX(4px);}
+
+/* coming soon card */
+.version-card.soon{cursor:default;opacity:.95;}
+.version-card.soon:hover{border-color:#1e1e1e;background:rgba(255,255,255,.025);transform:none;}
+.version-card.soon::after{display:none;}
+.version-card.soon .v-arrow{display:none;}
+.soon-badge{
+  position:absolute;right:18px;top:50%;transform:translateY(-50%);
+  font-size:clamp(9px,1.1vw,12px);
+  color:#333;border:1px solid #2a2a2a;padding:5px 12px;letter-spacing:2px;
+}
+
+/* ── FOOTER ── */
+.footer{
+  position:relative;z-index:2;
+  text-align:center;
+  padding:30px 20px;
+  font-size:clamp(10px,1.2vw,13px);
+  color:#2a2a2a;letter-spacing:2px;
+  line-height:2.2;
+}
+.footer a{color:#333;text-decoration:none;}
+.footer a:hover{color:var(--yellow);}
+
+/* ── CURSOR TRAIL ── */
+.cursor-dot{
+  position:fixed;pointer-events:none;z-index:9999;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--yellow);
+  transform:translate(-50%,-50%);
+  transition:opacity .4s;
+  mix-blend-mode:screen;
+}
+</style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+
+<!-- floating bg cube tiles -->
+<script>
+const TILE_COLS=['#e8001d','#f5c400','#003cb3','#00a651','#ff6b00','#f0f0f0'];
+for(let i=0;i<22;i++){
+  const d=document.createElement('div');
+  d.className='bg-tile';
+  const s=Math.random()*18+8;
+  d.style.cssText=`width:${s}px;height:${s}px;background:${TILE_COLS[i%6]};`+
+    `left:${Math.random()*100}vw;`+
+    `animation-duration:${12+Math.random()*18}s;`+
+    `animation-delay:${-Math.random()*28}s;`;
+  document.body.appendChild(d);
+}
+</script>
+
+<div class="wrap">
+
+  <div class="logo-area">
+    <div class="logo-pre">// ARCADE · BROWSER · FIGHTER</div>
+    <div class="logo">RUBIK'S<br>KOMBAT</div>
+    <div class="logo-sub">◆ TWIST · SPIN · WIN ◆</div>
+    <div class="logo-desc">A browser fighting game where 3D Rubik's Cubes<br>battle it out with physics, combos &amp; comic-book action.</div>
+  </div>
+
+  <div class="section-label">SELECT VERSION</div>
+
+  <div class="versions">
+
+    <!-- V2 — coming soon (always newest on top) -->
+    <div class="version-card soon">
+      <div class="v-badge" style="color:#2a2a2a;text-shadow:none">V2</div>
+      <div class="v-info">
+        <div class="v-title" style="color:#2a2a2a">COMING SOON</div>
+        <div class="v-desc" style="color:#2a2a2a">Next version in development...</div>
+      </div>
+      <div class="soon-badge">SOON</div>
+    </div>
+
+    <!-- V1 — available -->
+    <a class="version-card" href="rubiks-kombat-v1.html">
+      <div class="v-badge">V1</div>
+      <div class="v-info">
+        <div class="v-title">ORIGINAL RELEASE</div>
+        <div class="v-desc">Full game · AI vs AI &amp; Player vs AI modes · Physics knockback · Comic bubbles · Animated space background</div>
+        <div class="v-tags">
+          <span class="tag">PLAYABLE</span>
+          <span class="tag">2 MODES</span>
+          <span class="tag">VANILLA JS</span>
+        </div>
+      </div>
+      <div class="v-arrow">›</div>
+    </a>
+
+  </div>
+
+</div>
+
+<div class="footer">
+  RUBIK'S KOMBAT &nbsp;·&nbsp; OPEN SOURCE &nbsp;·&nbsp;
+  <a href="https://github.com/xplayerlabs/rubiks-kombat" target="_blank">GITHUB ↗</a>
+  &nbsp;·&nbsp;
+  <a href="https://www.youtube.com/@Xplayer3" target="_blank">YOUTUBE CHANNEL ↗</a>
+
+</div>
+
+<!-- subtle cursor dot -->
+<div class="cursor-dot" id="cdot"></div>
+<script>
+const dot=document.getElementById('cdot');
+document.addEventListener('mousemove',e=>{
+  dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px';
+});
+document.addEventListener('mouseleave',()=>dot.style.opacity='0');
+document.addEventListener('mouseenter',()=>dot.style.opacity='1');
+</script>
+
+</body>
+</html>
